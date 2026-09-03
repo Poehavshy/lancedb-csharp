@@ -19,6 +19,8 @@ namespace lancedb
     {
         private readonly float _k;
         private readonly string _returnScore;
+        private readonly float _vectorWeight;
+        private readonly float _ftsWeight;
 
         /// <summary>
         /// Creates a new <see cref="RRFReranker"/> with the specified constant.
@@ -30,13 +32,19 @@ namespace lancedb
         /// <c>"relevance"</c> (default) returns only <c>_relevance_score</c>.
         /// <c>"all"</c> also keeps <c>_distance</c> and <c>_score</c>.
         /// </param>
+        /// <param name="vectorWeight">Weight applied to vector-search ranks.</param>
+        /// <param name="ftsWeight">Weight applied to full-text-search ranks.</param>
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown if <paramref name="k"/> is less than or equal to 0.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// Thrown if <paramref name="returnScore"/> is not <c>"relevance"</c> or <c>"all"</c>.
         /// </exception>
-        public RRFReranker(float k = 60f, string returnScore = "relevance")
+        public RRFReranker(
+            float k = 60f,
+            string returnScore = "relevance",
+            float vectorWeight = 1f,
+            float ftsWeight = 1f)
         {
             if (k <= 0)
             {
@@ -48,8 +56,22 @@ namespace lancedb
                     "returnScore must be \"relevance\" or \"all\".",
                     nameof(returnScore));
             }
+            if (vectorWeight < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(vectorWeight), "vectorWeight must not be negative.");
+            }
+            if (ftsWeight < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(ftsWeight), "ftsWeight must not be negative.");
+            }
+            if (vectorWeight == 0 && ftsWeight == 0)
+            {
+                throw new ArgumentException("At least one RRF weight must be greater than zero.");
+            }
             _k = k;
             _returnScore = returnScore;
+            _vectorWeight = vectorWeight;
+            _ftsWeight = ftsWeight;
         }
 
         /// <inheritdoc />
@@ -70,7 +92,7 @@ namespace lancedb
                     var id = vecRowIds.GetValue(i);
                     if (id.HasValue)
                     {
-                        float score = 1f / (i + 1 + _k);
+                        float score = _vectorWeight / (i + 1 + _k);
                         if (rrfScores.ContainsKey(id.Value))
                         {
                             rrfScores[id.Value] += score;
@@ -93,7 +115,7 @@ namespace lancedb
                     var id = ftsRowIds.GetValue(i);
                     if (id.HasValue)
                     {
-                        float score = 1f / (i + 1 + _k);
+                        float score = _ftsWeight / (i + 1 + _k);
                         if (rrfScores.ContainsKey(id.Value))
                         {
                             rrfScores[id.Value] += score;
