@@ -892,7 +892,7 @@ namespace lancedb.tests
             var ex = await Assert.ThrowsAsync<LanceDbException>(
                 () => fixture.Table.Update(
                     new Dictionary<string, string> { { "id", "abc()" } }));
-            Assert.Contains("lance error: Invalid user input", ex.Message);
+            Assert.Contains("Invalid user input", ex.Message);
             Assert.Contains("Error during planning: Invalid function 'abc'", ex.Message);
         }
 

@@ -101,23 +101,23 @@ namespace lancedb.tests
         }
 
         [Fact]
-        public async Task NearestToText_MultiMatchAndOperator_RequiresAllTerms()
+        public async Task NearestToText_MultiMatchAndOperator_RequiresAllTermsInSameField()
         {
             using var fixture = await TestFixture.CreateMultiTextFixture("ftq_multi_and");
             await fixture.Table.CreateIndex(new[] { "title" }, new FtsIndex());
             await fixture.Table.CreateIndex(new[] { "body" }, new FtsIndex());
 
-            // AND requires both "apple" and "recipe" to be present. Row 2
-            // ("cherry cake" / "fig jam recipe") has no "apple", so it is excluded;
-            // rows 0 and 1 remain. This differs from the OR result (all three rows).
+            // Since LanceDB 0.38, AND is evaluated within each searched field.
+            // Only row 1 has both "apple" and "recipe" in the body. Row 0 has
+            // the terms split across title and body, so it does not match.
             var query = new MultiMatchQuery(
                 "apple recipe", new[] { "title", "body" }, @operator: FullTextOperator.And);
             using var q = fixture.Table.Query().NearestToText(query);
             var rows = await q.ToList();
 
-            Assert.Equal(2, rows.Count);
+            Assert.Single(rows);
             var ids = rows.Select(r => (int)r["id"]!).OrderBy(i => i).ToArray();
-            Assert.Equal(new[] { 0, 1 }, ids);
+            Assert.Equal(new[] { 1 }, ids);
         }
 
         [Fact]

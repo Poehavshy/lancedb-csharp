@@ -141,6 +141,7 @@ pub fn index_type_to_ffi(t: &lancedb::index::IndexType) -> i32 {
         IndexType::LabelList => 9,
         IndexType::FTS => 10,
         IndexType::Fm => 11,
+        IndexType::Unknown => -1,
     }
 }
 

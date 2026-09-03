@@ -611,6 +611,7 @@ fn build_index(index_type: i32, config: &sonic_rs::Value) -> Result<LanceIndex, 
     let idx_type = ffi::ffi_to_index_type(index_type)?;
 
     match idx_type {
+        IndexType::Unknown => Err("Cannot create an unknown index type".to_string()),
         IndexType::BTree => Ok(LanceIndex::BTree(BTreeIndexBuilder::default())),
         IndexType::Bitmap => Ok(LanceIndex::Bitmap(BitmapIndexBuilder::default())),
         IndexType::LabelList => Ok(LanceIndex::LabelList(LabelListIndexBuilder::default())),
@@ -878,7 +879,7 @@ pub extern "C" fn table_add_columns(
 
     crate::spawn(async move {
         let transform = NewColumnTransform::SqlExpressions(pairs);
-        match table.add_columns(transform, None).await {
+        match table.add_columns().transform(transform).execute().await {
             Ok(result) => {
                 completion(result.version as *const std::ffi::c_void, std::ptr::null(), user_data.as_ptr());
             }
@@ -908,7 +909,7 @@ pub extern "C" fn table_add_columns_null(
 
     crate::spawn(async move {
         let transform = NewColumnTransform::AllNulls(schema);
-        match table.add_columns(transform, None).await {
+        match table.add_columns().transform(transform).execute().await {
             Ok(result) => {
                 completion(result.version as *const std::ffi::c_void, std::ptr::null(), user_data.as_ptr());
             }
@@ -1591,9 +1592,9 @@ pub extern "C" fn table_merge_insert(
         // Only forward use_lsm_write when the caller explicitly sets it
         // (sentinel `-1` means "leave the builder's default in place").
         if use_lsm_write == 0 {
-            builder.use_lsm_write(false);
+            builder.use_lsm(false);
         } else if use_lsm_write == 1 {
-            builder.use_lsm_write(true);
+            builder.use_lsm(true);
         }
 
         let reader = arrow_array::RecordBatchIterator::new(
