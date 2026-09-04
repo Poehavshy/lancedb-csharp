@@ -111,7 +111,7 @@ namespace lancedb
         /// </summary>
         internal byte[] SerializeParamsUtf8()
         {
-            return JsonSerializer.SerializeToUtf8Bytes(BuildParamsDict());
+            return NativeCall.ToJsonUtf8(BuildParamsDict());
         }
 
         /// <summary>

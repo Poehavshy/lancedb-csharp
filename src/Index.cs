@@ -9,7 +9,7 @@ namespace lancedb
     /// </summary>
     public abstract class Index
     {
-        internal static readonly byte[] EmptyConfig = new byte[] { (byte)'{', (byte)'}' };
+        internal static readonly byte[] EmptyConfig = new byte[] { (byte)'{', (byte)'}', 0 };
 
         internal abstract IndexType IndexType { get; }
         internal abstract byte[] ToConfigJsonUtf8();
@@ -171,7 +171,7 @@ namespace lancedb
                 ["prefix_only"] = PrefixOnly,
             };
             if (MaxTokenLength.HasValue) { dict["max_token_length"] = MaxTokenLength.Value; }
-            return JsonSerializer.SerializeToUtf8Bytes(dict);
+            return NativeCall.ToJsonUtf8(dict);
         }
     }
 
@@ -289,7 +289,7 @@ namespace lancedb
             if (NumPartitions.HasValue) { dict["num_partitions"] = NumPartitions.Value; }
             if (NumSubVectors.HasValue) { dict["num_sub_vectors"] = NumSubVectors.Value; }
             if (TargetPartitionSize.HasValue) { dict["target_partition_size"] = TargetPartitionSize.Value; }
-            return JsonSerializer.SerializeToUtf8Bytes(dict);
+            return NativeCall.ToJsonUtf8(dict);
         }
     }
 
@@ -367,7 +367,7 @@ namespace lancedb
             if (NumPartitions.HasValue) { dict["num_partitions"] = NumPartitions.Value; }
             if (NumSubVectors.HasValue) { dict["num_sub_vectors"] = NumSubVectors.Value; }
             if (TargetPartitionSize.HasValue) { dict["target_partition_size"] = TargetPartitionSize.Value; }
-            return JsonSerializer.SerializeToUtf8Bytes(dict);
+            return NativeCall.ToJsonUtf8(dict);
         }
     }
 
@@ -425,7 +425,7 @@ namespace lancedb
             };
             if (NumPartitions.HasValue) { dict["num_partitions"] = NumPartitions.Value; }
             if (TargetPartitionSize.HasValue) { dict["target_partition_size"] = TargetPartitionSize.Value; }
-            return JsonSerializer.SerializeToUtf8Bytes(dict);
+            return NativeCall.ToJsonUtf8(dict);
         }
     }
 
@@ -477,7 +477,7 @@ namespace lancedb
             };
             if (NumPartitions.HasValue) { dict["num_partitions"] = NumPartitions.Value; }
             if (TargetPartitionSize.HasValue) { dict["target_partition_size"] = TargetPartitionSize.Value; }
-            return JsonSerializer.SerializeToUtf8Bytes(dict);
+            return NativeCall.ToJsonUtf8(dict);
         }
     }
 
@@ -536,7 +536,7 @@ namespace lancedb
             };
             if (NumPartitions.HasValue) { dict["num_partitions"] = NumPartitions.Value; }
             if (TargetPartitionSize.HasValue) { dict["target_partition_size"] = TargetPartitionSize.Value; }
-            return JsonSerializer.SerializeToUtf8Bytes(dict);
+            return NativeCall.ToJsonUtf8(dict);
         }
     }
 
@@ -601,7 +601,7 @@ namespace lancedb
             };
             if (NumPartitions.HasValue) { dict["num_partitions"] = NumPartitions.Value; }
             if (TargetPartitionSize.HasValue) { dict["target_partition_size"] = TargetPartitionSize.Value; }
-            return JsonSerializer.SerializeToUtf8Bytes(dict);
+            return NativeCall.ToJsonUtf8(dict);
         }
     }
 
@@ -668,7 +668,7 @@ namespace lancedb
             };
             if (NumPartitions.HasValue) { dict["num_partitions"] = NumPartitions.Value; }
             if (TargetPartitionSize.HasValue) { dict["target_partition_size"] = TargetPartitionSize.Value; }
-            return JsonSerializer.SerializeToUtf8Bytes(dict);
+            return NativeCall.ToJsonUtf8(dict);
         }
     }
 }

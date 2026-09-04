@@ -56,6 +56,10 @@
 
   <!-- NuGet package content -->
   <ItemGroup>
+    <InternalsVisibleTo Include="tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="build\LanceDB.targets" Pack="true" PackagePath="build/LanceDB.targets" />
   </ItemGroup>

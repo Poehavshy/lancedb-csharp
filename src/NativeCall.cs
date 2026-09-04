@@ -3,6 +3,7 @@ namespace lancedb
     using System;
     using System.Runtime.InteropServices;
     using System.Text;
+    using System.Text.Json;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -159,8 +160,19 @@ namespace lancedb
         }
 
         /// <summary>
-        /// Encodes a string as null-terminated UTF-8 bytes for passing to Rust FFI.
+        /// Serializes a value as null-terminated UTF-8 JSON for passing to Rust FFI.
         /// </summary>
+        internal static byte[] ToJsonUtf8<T>(T value)
+        {
+            // Rust reads JSON through CStr::from_ptr, not a pointer/length pair.
+            // Never rely on padding after a managed array to supply the terminator.
+            byte[] json = JsonSerializer.SerializeToUtf8Bytes(value);
+            byte[] terminated = new byte[json.Length + 1];
+            json.CopyTo(terminated, 0);
+            return terminated;
+        }
+
+        /// <summary>Encodes a string as null-terminated UTF-8 for Rust FFI.</summary>
         internal static byte[] ToUtf8(string s)
         {
             byte[] utf8 = Encoding.UTF8.GetBytes(s);
