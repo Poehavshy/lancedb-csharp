@@ -495,14 +495,17 @@ namespace lancedb.tests
             var results = await fixture.Table.Query()
                 .NearestToText("apple")
                 .NearestTo(new double[] { 1.0, 0.0, 0.0 })
+                .Rerank(new RRFReranker(returnScore: "all"))
                 .Select(new[] { "id", "content" })
                 .ToArrow();
 
             Assert.True(results.Length > 0);
-            // Should contain selected columns plus _relevance_score
+            // Search metadata remains available even when stored columns are projected.
             Assert.Contains(results.Schema.FieldsList, f => f.Name == "id");
             Assert.Contains(results.Schema.FieldsList, f => f.Name == "content");
             Assert.Contains(results.Schema.FieldsList, f => f.Name == "_relevance_score");
+            Assert.Contains(results.Schema.FieldsList, f => f.Name == "_distance");
+            Assert.Contains(results.Schema.FieldsList, f => f.Name == "_score");
             // Should NOT contain unselected columns
             Assert.DoesNotContain(results.Schema.FieldsList, f => f.Name == "vector");
             Assert.DoesNotContain(results.Schema.FieldsList, f => f.Name == "_rowid");

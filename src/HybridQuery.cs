@@ -740,8 +740,11 @@ namespace lancedb
         private static RecordBatch ApplySelect(RecordBatch batch, IReadOnlyList<string> columns)
         {
             var keep = new HashSet<string>(columns);
-            // Always include _relevance_score from reranker
+            // Search metadata is computed after the native projection and remains part
+            // of the hybrid result even when callers restrict stored table columns.
             keep.Add("_relevance_score");
+            keep.Add("_distance");
+            keep.Add("_score");
 
             var fields = new List<Field>();
             var arrays = new List<IArrowArray>();
