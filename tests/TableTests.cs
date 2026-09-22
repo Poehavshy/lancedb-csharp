@@ -1245,6 +1245,37 @@ namespace lancedb.tests
         }
 
         [Fact]
+        public async Task TakeOffsets_DuplicateOffsets_PreservesDuplicates()
+        {
+            var tmpDir = Path.Combine(Path.GetTempPath(), "lancedb_test_" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                var connection = new Connection();
+                await connection.Connect(tmpDir);
+
+                var data = CreateIdValueBatch(new[] { 10, 20, 30 }, new[] { "a", "b", "c" });
+                var table = await connection.CreateTable("take_duplicate_offsets", data);
+
+                var result = await table.TakeOffsets(new ulong[] { 2, 0, 2 }).ToArrow();
+                var ids = Assert.IsType<Apache.Arrow.Int32Array>(result.Column("id"));
+
+                Assert.Equal(3, result.Length);
+                Assert.Equal(new int?[] { 10, 30, 30 },
+                    Enumerable.Range(0, ids.Length).Select(ids.GetValue).OrderBy(id => id).ToArray());
+
+                table.Dispose();
+                connection.Dispose();
+            }
+            finally
+            {
+                if (Directory.Exists(tmpDir))
+                {
+                    Directory.Delete(tmpDir, true);
+                }
+            }
+        }
+
+        [Fact]
         public async Task TakeOffsets_WithColumns_ReturnsSubset()
         {
             var tmpDir = Path.Combine(Path.GetTempPath(), "lancedb_test_" + Guid.NewGuid().ToString("N"));
